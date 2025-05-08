@@ -17,7 +17,7 @@ k_r = 1
 lambda_p = 1 #lambda degradation rate
 lambda_b = 1
 lambda_r = 1
-bcr_0 = 5*(C_0/t_0)
+bcr_0 = 5 #not constant
 cd_0 = 0.09
 
 #check
@@ -48,11 +48,19 @@ print(f"Conditions is {condition} and theshold is {treshold}")
 #time
 time = np.linspace(0,200,100)
 
-BCR = bcr_0*(k_b**2/(k_b**2+B_0**2)) #constant or changing?
-CD40 = cd_0*(k_b**2/(k_b**2+B_0**2))
+a_bcr = 15
+a_cd = 5
+mean_cd = 60
+mean_bcr = 40
+s = 1.1
 
-def gc_pathway_exit(y,t, BCR, CD40):
+def gc_pathway_exit(y,t):
     P,B,R = y
+    bcr_0 = a_bcr*np.exp(-(t - mean_bcr)**2/s**2)
+    cd_0 = a_cd*np.exp(-(t - mean_cd)**2/s**2)
+    #
+    BCR = bcr_0*(k_b**2/(k_b**2+B**2)) 
+    CD40 = cd_0*(k_b**2/(k_b**2+B**2))
     dpdt = u_p + sigma_p*(k_b**2/(k_b**2+B**2)) + sigma_p*(R**2/(k_r**2 + R**2)) - lambda_p*P
     dbdt = u_b +sigma_b*(k_p**2/(k_p**2+P**2))*(k_b**2/(k_b**2 +B**2))*(k_r**2/(k_r**2 +R**2)) -(lambda_b + BCR)*B
     drdt = u_r +sigma_r*(R**2/(k_r**2+R**2)) + CD40 - lambda_r*R
@@ -63,7 +71,7 @@ def gc_pathway_exit(y,t, BCR, CD40):
 y_0 = (P_0, B_0, R_0)
 
 #solving 
-solution = odeint(gc_pathway_exit, y_0, time, (BCR, CD40))
+solution = odeint(gc_pathway_exit, y_0, time)
 P,B,R = solution.T
 
 #plotting 
