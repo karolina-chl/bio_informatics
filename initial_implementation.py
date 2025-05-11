@@ -74,6 +74,10 @@ y_0 = (P_0, B_0, R_0)
 solution = odeint(gc_pathway_exit, y_0, time)
 P,B,R = solution.T
 
+print(P)
+print(B)
+print(R)
+
 #plotting 
 
 plt.figure()
@@ -82,3 +86,5 @@ plt.plot(time, B, "green", label = "BCL6")
 plt.plot(time, R, "yellow", label = "IRF4")
 plt.legend()
 plt.show()
+
+
