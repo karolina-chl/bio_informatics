@@ -1,14 +1,13 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import fsolve, dual_annealing
+import matplotlib.pyplot as plt
 
-# --------------------------------------------
-# 1. LOAD AND PREPROCESS DATA
-# --------------------------------------------
+######################################### Load data and visualize it #################################
+
 def load_expression_data(file_path):
     # Load the Excel file
     df = pd.read_excel(file_path)
-    df.columns = df.columns.str.strip()
 
     gc_data = df[df['Sample'].isin(['CB', 'CC'])]
     pc_data = df[df['Sample'] == 'PC']
@@ -26,12 +25,34 @@ def load_pc_expression(file_path):
     pc_mean = pc_data[['BLIMP1', 'BCL6', 'IRF4']].mean().values
     return pc_mean
 
-# --------------------------------------------
-# 2. ODE MODEL IN STEADY STATE FORM
-# --------------------------------------------
-def steady_state_system(vars, t_0, u_p, u_b, u_r, sigma_p, sigma_b, sigma_r):
-    P, B, R = vars
-    # Constants from Table S1
+def visualize_data(file_path, Sample): 
+    data = pd.read_excel(file_path)
+    PC_data = data[data["Sample"].isin(Sample)]
+    BLIMP1 = PC_data['BLIMP1']
+    BCL6 = PC_data['BCL6']
+    IRF4 = PC_data['IRF4']
+
+    #plotting 
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4))  
+
+    # Plot each boxplot on a separate subplot
+    axes[0].boxplot(BLIMP1)
+    axes[0].set_title('BLIMP1')
+
+    axes[1].boxplot(BCL6)
+    axes[1].set_title('BCL6')
+
+    axes[2].boxplot(IRF4)
+    axes[2].set_title('IRF4')
+    fig.suptitle(Sample)
+    plt.savefig(f"C:/for_python/bio_inf/bio_informatics/figures/{Sample}")
+
+
+######################################### simulate the system in steady state #################################
+
+
+def steady_state_system(params, t_0, u_p, u_b, u_r, sigma_p, sigma_b, sigma_r):
+    P, B, R = params
     k_p = k_b = k_r = 1
     lambda_p = lambda_b = lambda_r = 1
     a_bcr = 15
@@ -64,9 +85,6 @@ def solve_steady_state(mu_p, mu_b, mu_r, sigma_p, sigma_b, sigma_r):
         raise RuntimeError("Failed to converge to steady state")
     return np.array(solution)
 
-# --------------------------------------------
-# 3. OBJECTIVE FUNCTION FOR PARAMETER FITTING
-# --------------------------------------------
 def objective(params, pc_data):
     mu_p, mu_b, mu_r, sigma_p, sigma_b, sigma_r = params
 
@@ -80,20 +98,19 @@ def objective(params, pc_data):
         return pc_error
 
     except Exception as e:
-        # Penalize failure to reach steady state
         return 1e6
 
-# --------------------------------------------
-# 4. MAIN OPTIMIZATION ROUTINE
-# --------------------------------------------
+    
+######################################### parameter fitting #################################
+
 def run_parameter_fitting(file_path):
-    # Load data
+
     pc_expr = load_pc_expression(file_path)
 
     # Parameter bounds
-    bounds = [(0, 0.1),(1, 2.5), (0,0.101), (0, 10), (90, 100), (1.79, 2.62)]  # for 6 parameters: μ_p, μ_b, μ_r, σ_p, σ_b, σ_r 
+    bounds = [(0, 0.1),(1, 2.5), (0,0.101), (0, 10), (90, 100), (1.79, 2.62)]  # bounds for: μ_p, μ_b, μ_r, σ_p, σ_b, σ_r (in this order)
 
-    # Run global optimizer (Simulated Annealing)
+    #global optimization by simulated annealing
     result = dual_annealing(objective, bounds, args=(pc_expr,))
 
     print("Optimal Parameters:")
@@ -104,9 +121,7 @@ def run_parameter_fitting(file_path):
     print(f"\nFinal Error: {result.fun:.5f}")
     return result
 
-# --------------------------------------------
-# 5. ENTRY POINT
-# --------------------------------------------
+
 if __name__ == "__main__":
-    # Replace with actual path to your .csv file
+    visualize_data("C:/for_python/bio_inf/bio_informatics/data.xlsx", ["CB", "CC"])
     fitted = run_parameter_fitting("C:/for_python/bio_inf/bio_informatics/data.xlsx")
