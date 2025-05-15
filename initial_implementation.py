@@ -81,6 +81,8 @@ plt.plot(time, P, "blue", label="BLIMP1")
 plt.plot(time, B, "green", label = "BCL6")
 plt.plot(time, R, "yellow", label = "IRF4")
 plt.legend()
-plt.show()
+#plt.show()
 
-
+print(f"The equilibrium 1 of 25 is {P[25]}")
+print(f"The equilibrium 1 of 25 is {P[0]}")
+print(f"The equilibrium 1 of 25 is {P[100]}")
