@@ -71,8 +71,7 @@ def gc_pathway_exit(y, t, arguments):
 
     return dpdt, dbdt, drdt
 
-def solve_differential_equation(gc_pathway_exit, arguments):
-    initial_conditions = (0.1,5,0.1)
+def solve_differential_equation(gc_pathway_exit, arguments, initial_conditions = (0.1,5,0.1)):
     #solve 
     time = np.linspace(0,200,200)
     solution = odeint(gc_pathway_exit, initial_conditions, time, args = (arguments,))
@@ -82,7 +81,23 @@ def solve_differential_equation(gc_pathway_exit, arguments):
 
     return gc_equilibrium, pc_equilibrium, P, B, R, time
 
+def visualise_model(arguments, save_path):
+    _, _,  P, B, R, _ = solve_differential_equation(gc_pathway_exit, arguments)
+    time = np.linspace(0,200,200)
+    plt.figure()
+    plt.plot(time, P, "blue", label="BLIMP1")
+    plt.plot(time, B, "green", label = "BCL6")
+    plt.plot(time, R, "yellow", label = "IRF4")
+    plt.xlabel("Time")
+    plt.ylabel("Level")
+    plt.legend()
+    plt.grid()
+    plt.savefig(save_path)
+    plt.show()
+
+
 def error_function(arguments):
+    
     gc_equilibrium, pc_equilibrium, _, _, _, _= solve_differential_equation(gc_pathway_exit, arguments)
     blimp1_gc, bcl6_gc, irf4_gc, blimp1_pc, bcl6_pc, irf4_pc = load_the_data("C:/for_python/bio_inf/bio_informatics/data.xlsx")
 
@@ -92,18 +107,54 @@ def error_function(arguments):
     overall_error = error_gc + error_pc
 
     return overall_error
+
+def error_function_bistability(arguments):
+
+    _, _,u_r, _, _, sigma_r = arguments
+
+    if bistability_conditions(u_r,sigma_r) == False:
+        return 1e6
     
+    gc_equilibrium, pc_equilibrium, _, _, _, _= solve_differential_equation(gc_pathway_exit, arguments)
+    blimp1_gc, bcl6_gc, irf4_gc, blimp1_pc, bcl6_pc, irf4_pc = load_the_data("C:/for_python/bio_inf/bio_informatics/data.xlsx")
+
+    error_gc = np.sqrt((gc_equilibrium["BLIMP1"] - blimp1_gc)**2) + np.sqrt((gc_equilibrium["BCL6"] - bcl6_gc)**2) + np.sqrt((gc_equilibrium["IRF4"] - irf4_gc)**2)
+    error_pc = np.sqrt((pc_equilibrium["BLIMP1"] - blimp1_pc)**2) + np.sqrt((pc_equilibrium["BCL6"] - bcl6_pc)**2) + np.sqrt((pc_equilibrium["IRF4"] - irf4_pc)**2)
+
+    overall_error = error_gc + error_pc
+
+    return overall_error
 
 ################# fitting function ###########################
 
-def parameter_fitting():    
-    bounds = [(0, 1),(1, 3), (0,0.101), (8,10), (90, 101), (1.79, 2.62)]  # bounds for: μ_p, μ_b, μ_r, σ_p, σ_b, σ_r (in this order)
-    result = dual_annealing(error_function, bounds)
+def bistability_conditions(u_r, sigma_r):
+    CD40 = 0 
+    lambda_r = k_r = 1
+    beta = (u_r + CD40 + sigma_r)/lambda_r*k_r
 
-    print("Optimal Parameters:")
-    labels = ["mu_p", "mu_b", "mu_r", "sigma_p", "sigma_b", "sigma_r"]
-    np.save("estimated_parameters.npy", result.x)
+    if beta < np.sqrt(3):
+        return False
     
+    condition_S10 = beta**3 - np.sqrt((beta**2 -3)**3) + 9*beta
+    condition_S11 = beta**3 + np.sqrt((beta**2 -3)**3) + 9*beta
+    treshold = (27*sigma_r)/(2*lambda_r*k_r)
+
+    if  condition_S10 < treshold and condition_S11 > treshold: 
+        return True
+    else:
+        return False 
+    
+def parameter_fitting(bounds, bistability_check = True):
+
+    if bistability_check == True:
+        result = dual_annealing(error_function_bistability, bounds)
+        np.save(f"estimated_parameters_bistability.npy", result.x)
+    else: 
+        result = dual_annealing(error_function, bounds)
+        np.save(f"estimated_parameters.npy", result.x)
+
+    labels = ["mu_p", "mu_b", "mu_r", "sigma_p", "sigma_b", "sigma_r"]
+    print("Optimal Parameters:")
     for name, val in zip(labels, result.x):
         print(f"{name}: {val}")
     print(f"\nFinal Error: {result.fun:.5f}")
@@ -112,7 +163,7 @@ def parameter_fitting():
 
 #################### visualize the model with the estimated parameters #########################
 
-def visualize(arguments, dotsize, mode = "all data"):
+def visualize_fitting(arguments, dotsize, mode = "all data"):
     _,_, P, B, R, time = solve_differential_equation(gc_pathway_exit, arguments)
 
     #plotting the model with estimated parameters
@@ -121,6 +172,7 @@ def visualize(arguments, dotsize, mode = "all data"):
     plt.plot(time, B, "green", label = "BCL6")
     plt.plot(time, R, "yellow", label = "IRF4")
     plt.xlabel("Time")
+    plt.ylabel("Level")
     plt.legend()
 
     if mode == "all data":
@@ -132,7 +184,7 @@ def visualize(arguments, dotsize, mode = "all data"):
         plt.scatter([175]*len(blimp1_pc), blimp1_pc, marker = "o", color = "blue", s=dotsize)
         plt.scatter([175]*len(bcl6_pc), bcl6_pc, marker ="o", color = "green", s=dotsize)
         plt.scatter([175]*len(irf4_pc), irf4_pc, marker ="o", color = "yellow", s=dotsize)
-        plt.savefig(f"C:/for_python/bio_inf/bio_informatics/figures/{mode}.jpg")
+        plt.savefig(f"C:/for_python/bio_inf/bio_informatics/figures/{mode}, {arguments[1]}.jpg")
         plt.show()
     elif mode == "mean":
         #adding mean on the figure 
@@ -143,15 +195,35 @@ def visualize(arguments, dotsize, mode = "all data"):
         plt.scatter(175, blimp1_pc, marker = "*", color = "blue", s=dotsize)
         plt.scatter(175, bcl6_pc, marker ="*", color = "green", s=dotsize)
         plt.scatter(175, irf4_pc, marker ="*", color = "yellow", s=dotsize)
-        plt.savefig(f"C:/for_python/bio_inf/bio_informatics/figures/{mode}, {blimp1_gc}.jpg")
+        plt.savefig(f"C:/for_python/bio_inf/bio_informatics/figures/{mode}, {arguments[1]}.jpg")
         plt.show()
 
+def visualize_data(file_path, Sample): 
+    data = pd.read_excel(file_path)
+    PC_data = data[data["Sample"].isin(Sample)]
+    BLIMP1 = PC_data['BLIMP1']
+    BCL6 = PC_data['BCL6']
+    IRF4 = PC_data['IRF4']
 
-if __name__ == "__main__":
-    #solve_differential_equation(gc_pathway_exit, (0.1,5,0.1),(10**(-6), 2, 0.1, 9, 100, 2.6))
-    #load_the_data("C:/for_python/bio_inf/bio_informatics/data.xlsx")
-    parameter_fitting()
-    estimated_parameters = np.load("estimated_parameters.npy")
-    visualize(estimated_parameters, 30, "mean")
-    visualize(estimated_parameters, 4, "all data")
+    #plotting 
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4))  
+
+    # Plot each boxplot on a separate subplot
+    axes[0].boxplot(BLIMP1)
+    axes[0].set_title('BLIMP1')
+
+    axes[1].boxplot(BCL6)
+    axes[1].set_title('BCL6')
+
+    axes[2].boxplot(IRF4)
+    axes[2].set_title('IRF4')
+
+    for ax in axes:
+        ax.set_xticklabels([])
+    plt.savefig(f"C:/for_python/bio_inf/bio_informatics/figures/{Sample}")
+    plt.show()
+
+
+
+    
 
