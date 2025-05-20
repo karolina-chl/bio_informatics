@@ -1,9 +1,17 @@
 from parametter_fitting_final import *
 
+def run_experiments():
+
+    #integrate the system of ODE's 
+    visualise_model((10**(-6), 2, 0.1, 9, 100, 2.6), "figures/solved_model.png")
+
+
+
 
 if __name__ == "__main__":
 
-    visualise_model((10**(-6), 2, 0.1, 9, 100, 2.6), "figures/solved_model.png")
+    run_experiments()
+   
     #solve_differential_equation(gc_pathway_exit, (0.1,5,0.1),(10**(-6), 2, 0.1, 9, 100, 2.6))
     #load_the_data("C:/for_python/bio_inf/bio_informatics/data.xlsx")
 

@@ -84,14 +84,13 @@ def solve_differential_equation(gc_pathway_exit, arguments, initial_conditions =
 def visualise_model(arguments, save_path):
     _, _,  P, B, R, _ = solve_differential_equation(gc_pathway_exit, arguments)
     time = np.linspace(0,200,200)
-    plt.figure()
+    plt.figure(figsize=(8,4))
     plt.plot(time, P, "blue", label="BLIMP1")
     plt.plot(time, B, "green", label = "BCL6")
     plt.plot(time, R, "yellow", label = "IRF4")
     plt.xlabel("Time")
     plt.ylabel("Level")
     plt.legend()
-    plt.grid()
     plt.savefig(save_path)
     plt.show()
 
