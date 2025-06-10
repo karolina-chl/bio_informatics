@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import fsolve, dual_annealing
 from scipy.integrate import odeint
-from numba import jit
 import matplotlib.pyplot as plt
 
 ###### load the data from the excel file ############
@@ -143,14 +142,14 @@ def bistability_conditions(u_r, sigma_r):
     else:
         return False 
     
-def parameter_fitting(bounds, bistability_check = True):
+def parameter_fitting(bounds, file_name, bistability_check = True):
 
     if bistability_check == True:
         result = dual_annealing(error_function_bistability, bounds)
-        np.save(f"estimated_parameters_bistability.npy", result.x)
+        np.save(file_name, result.x)
     else: 
         result = dual_annealing(error_function, bounds)
-        np.save(f"estimated_parameters.npy", result.x)
+        np.save(file_name, result.x)
 
     labels = ["mu_p", "mu_b", "mu_r", "sigma_p", "sigma_b", "sigma_r"]
     print("Optimal Parameters:")
@@ -166,7 +165,7 @@ def visualize_fitting(arguments, dotsize, mode = "all data"):
     _,_, P, B, R, time = solve_differential_equation(gc_pathway_exit, arguments)
 
     #plotting the model with estimated parameters
-    plt.figure()
+    plt.figure(figsize=(8,4))
     plt.plot(time, P, "blue", label="BLIMP1")
     plt.plot(time, B, "green", label = "BCL6")
     plt.plot(time, R, "yellow", label = "IRF4")
