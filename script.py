@@ -1,4 +1,5 @@
 from parametter_fitting_final import *
+from Experiment_bounds import *
 
 def run_experiments():
 
@@ -21,9 +22,9 @@ def run_experiments():
     visualize_fitting(estimated_parameters_b, 30, "mean")
     #visualize_fitting(estimated_parameters_b, 4, "all data")
 
+    #experiment with the bound
+    visualise_the_experiment("data/bounds_experiment_results.xlsx")
 
 if __name__ == "__main__":
 
     run_experiments()
-
-   

@@ -52,14 +52,6 @@ def visualise_the_experiment(location_path, true_params = (1e-6, 2, 0.1, 9, 100,
     sigma_b_est = results["sigma_b"].tolist()
     sigma_r_est = results["sigma_r"].tolist()
 
-    #visualise the error
-    plt.figure()
-    plt.plot(percent, error, marker = "o", color = "green" )
-    plt.ylabel("Error")
-    plt.xlabel("Percentage")
-    plt.grid()
-    #plt.show()
-
     #visualise all parameters 
     fig, ax = plt.subplots(2, 3, figsize=(12, 8))  # Create a 2x3 grid of subplots
 
@@ -88,19 +80,9 @@ def visualise_the_experiment(location_path, true_params = (1e-6, 2, 0.1, 9, 100,
     ax[1, 2].plot(percent, [sigma_r]*len(percent), color = "gray")
     ax[1, 2].set_title("sigma_r")
 
-    # Optional: add overall figure title or adjust layout
     fig.suptitle("Estimates vs. Percent")
     plt.tight_layout()
-    plt.show()
-    #visualise the parameters 
-    plt.figure()
-    plt.plot(percent, difference_mu_p)
+    plt.savefig("figures/experiment.png")
     plt.show()
     return 
-
-if __name__ == "__main__":
-    # Example true parameters, replace with known/good values
-    true_params = (1e-6, 2, 0.1, 9, 100, 2.6)
-    #final_experiment(true_params, "C:/for_python/bio_inf/bio_informatics/results.xlsx")
-    visualise_the_experiment("C:/for_python/bio_inf/bio_informatics/results.xlsx")
 

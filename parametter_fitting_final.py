@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy.optimize import fsolve, dual_annealing
+from scipy.optimize import dual_annealing
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 
@@ -220,8 +220,3 @@ def visualize_data(file_path, Sample):
         ax.set_xticklabels([])
     plt.savefig(f"C:/for_python/bio_inf/bio_informatics/figures/{Sample}")
     plt.show()
-
-
-
-    
-
