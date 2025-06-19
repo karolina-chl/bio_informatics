@@ -27,4 +27,8 @@ def run_experiments():
 
 if __name__ == "__main__":
 
-    run_experiments()
+    #run_experiments()
+    estimated_parameters_nb = np.load("data/estimated_parameters.npy", allow_pickle=True)
+    estimated_parameters_b = np.load("data/estimated_parameters_bistability.npy", allow_pickle=True)
+    print(estimated_parameters_nb)
+    print(estimated_parameters_b)

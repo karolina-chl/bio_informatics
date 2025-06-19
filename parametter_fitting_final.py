@@ -144,12 +144,17 @@ def bistability_conditions(u_r, sigma_r):
     
 def parameter_fitting(bounds, file_name, bistability_check = True):
 
-    if bistability_check == True:
+    if bistability_check:
         result = dual_annealing(error_function_bistability, bounds)
-        np.save(file_name, result.x)
     else: 
         result = dual_annealing(error_function, bounds)
-        np.save(file_name, result.x)
+
+    # Save both parameters and error
+    results_to_save = {
+        "parameters": result.x,
+        "error": result.fun
+    }
+    np.save(file_name, results_to_save)
 
     labels = ["mu_p", "mu_b", "mu_r", "sigma_p", "sigma_b", "sigma_r"]
     print("Optimal Parameters:")

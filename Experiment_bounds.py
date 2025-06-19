@@ -79,8 +79,7 @@ def visualise_the_experiment(location_path, true_params = (1e-6, 2, 0.1, 9, 100,
     ax[1, 2].plot(percent, sigma_r_est, marker="o")
     ax[1, 2].plot(percent, [sigma_r]*len(percent), color = "gray")
     ax[1, 2].set_title("sigma_r")
-
-    fig.suptitle("Estimates vs. Percent")
+    
     plt.tight_layout()
     plt.savefig("figures/experiment.png")
     plt.show()
