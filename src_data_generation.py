@@ -17,5 +17,5 @@ def parametter_fitting_data():
     true_params = (1e-6, 2, 0.1, 9, 100, 2.6)
     final_experiment(true_params, "data/bounds_experiment_results.xlsx")
 
-#if __name__ == "__main__":
-    #parametter_fitting_data()
+if __name__ == "__main__":
+    parametter_fitting_data()
