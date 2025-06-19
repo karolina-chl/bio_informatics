@@ -1,4 +1,4 @@
-from parametter_fitting_final import *
+from src_parameter_fitting import *
 
 def generate_bounds(true_values, percent):
     bounds = []

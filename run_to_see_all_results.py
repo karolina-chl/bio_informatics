@@ -1,4 +1,4 @@
-from parametter_fitting_final import *
+from src_parameter_fitting import *
 from Experiment_bounds import *
 
 def run_experiments():
@@ -13,22 +13,19 @@ def run_experiments():
     visualize_data("C:/for_python/bio_inf/bio_informatics/data.xlsx", ["PC"])
 
     # visualise estimated parameters, without bistability
-    estimated_parameters_nb = np.load("data/estimated_parameters.npy")
+    data = np.load("data/estimated_parameters.npy", allow_pickle=True).item()
+    estimated_parameters_nb = data["parameters"]
     visualize_fitting(estimated_parameters_nb, 30, "mean")
-    #visualize_fitting(estimated_parameters_nb, 4, "all data")
 
     #visualise the data with bistability 
-    estimated_parameters_b = np.load("data/estimated_parameters_bistability.npy")
+    data = np.load("data/estimated_parameters_bistability.npy", allow_pickle=True).item()
+    estimated_parameters_b = data["parameters"]
     visualize_fitting(estimated_parameters_b, 30, "mean")
-    #visualize_fitting(estimated_parameters_b, 4, "all data")
 
     #experiment with the bound
     visualise_the_experiment("data/bounds_experiment_results.xlsx")
 
 if __name__ == "__main__":
 
-    #run_experiments()
-    estimated_parameters_nb = np.load("data/estimated_parameters.npy", allow_pickle=True)
-    estimated_parameters_b = np.load("data/estimated_parameters_bistability.npy", allow_pickle=True)
-    print(estimated_parameters_nb)
-    print(estimated_parameters_b)
+    run_experiments()
+    
